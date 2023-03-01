@@ -9,9 +9,13 @@ class Likes extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['like'];
+    protected $fillable = ['user_id', 'post_id'];
     
     public function posts () {
         return $this->belongsToMany(Post::class, 'likes_post', 'likes_id', 'post_id');
+    }
+
+    public function user() {
+        return $this->belongsTo(User::class);
     }
 }

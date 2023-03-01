@@ -3,22 +3,27 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Likes;
-use App\Models\Post;
+use App\Models\CommentLike;
+use App\Models\User;
+use App\Models\Comments;
 use Illuminate\Http\Response;
 
-class likeController extends Controller
+class CommentLikeController extends Controller
 {
-    
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function index($id)
     {
         
-        $likes = Likes::with(['user'])->where("post_id", $id)
+        $likes = CommentLike::with(['user'])->where("comment_id", $id)
         ->get();
 
         $response = [
             'likes'=> $likes,
-            'message'=> 'post likes retrieved successful',
+            'message'=> 'comment likes retrieved successful',
             'success' => true
         ];
 
@@ -32,35 +37,37 @@ class likeController extends Controller
         $id= Auth()->user()->id;
         
         $fields = $request->validate([
-            'post_id'=> 'required|integer',
+            'comment_id'=> 'required|integer',
         ]);
-        
-        $like = Likes::create([
-            'user_id'=> $id,
-            'post_id'=> $request->post_id
-        ]);
-        
 
         
-        $posts = Post::where('id', $request->post_id)->get();
-        $like->posts()->attach($posts);
+        $like = CommentLike::create([
+            'comment_id'=> $request['comment_id'],
+            'user_id'=> $id
+        ]);
+        
+        $comment = Comments::where('id', $request->comment_id)->get();
+        $like->comment()->attach($comment);
 
         $response = [
-            'message'=> 'post liked',
+            'like'=> $like,
+            'message'=> 'comment liked',
             'success' => true
         ];
 
         return response($response, 201);
+        
     }
-    
+
     public function destroy($id)
     {
         //
-        $like = Likes::destroy($id);
+        
+        $like = CommentLike::destroy($id);
         
         if($like === 1) {
             $response = [
-                'message'=> 'post unliked',
+                'message'=> 'comment unliked',
                 'success' => true
             ];
             return response($response);
@@ -72,6 +79,5 @@ class likeController extends Controller
             ];
             return response($response);
         }
-
     }
 }

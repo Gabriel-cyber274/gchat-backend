@@ -3,11 +3,12 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Subcomment;
+use App\Models\User;
 use App\Models\Comments;
-use App\Models\Post;
 use Illuminate\Http\Response;
 
-class commentController extends Controller
+class SubCommentController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -17,13 +18,13 @@ class commentController extends Controller
     public function index($id)
     {
         //
-
-        $comments = Comments::with(['user', 'commentlike', 'subcomments'])->where("post_id", $id)
+        
+        $subcomment = Subcomment::with(['user'])->where("comment_id", $id)
         ->get();
 
         $response = [
-            'comments'=> $comments,
-            'message'=> 'comment successful',
+            'subcomment'=> $subcomment,
+            'message'=> 'subcomments retrieved successful',
             'success' => true
         ];
 
@@ -33,25 +34,27 @@ class commentController extends Controller
     public function store(Request $request)
     {
         //
+        
         $id= Auth()->user()->id;
         
         $fields = $request->validate([
-            'post_id'=> 'required|integer',
-            'comment'=> 'required|string',
+            'comment_id'=> 'required|integer',
+            'comment'=> 'required|string'
+        ]);
+
+        
+        $subcomment = Subcomment::create([
+            'comment_id'=> $request['comment_id'],
+            'user_id'=> $id,
+            'comment'=> $request->comment
         ]);
         
-        $comments = Comments::create([
-            'comment'=> $request->comment,
-            'post_id'=> $request['post_id'],
-            'user_id'=> $id
-        ]);
-        
-        $posts = Post::where('id', $request->post_id)->get();
-        $comments->posts()->attach($posts);
+        $comment = Comments::where('id', $request->comment_id)->get();
+        $subcomment->comment()->attach($comment);
 
         $response = [
-            'commentID'=> $comments->id,
-            'message'=> 'comment successful',
+            'subcomment'=> $subcomment,
+            'message'=> 'subcomment created',
             'success' => true
         ];
 

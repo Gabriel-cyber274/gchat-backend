@@ -8,6 +8,8 @@ use App\Http\Controllers\mediaController;
 use App\Http\Controllers\likeController;
 use App\Http\Controllers\commentController;
 use App\Http\Controllers\shareController;
+use App\Http\Controllers\CommentLikeController;
+use App\Http\Controllers\SubCommentController;
 
 
 /*
@@ -40,10 +42,16 @@ Route::group(['middleware'=> ['auth:sanctum']], function () {
     Route::get('/media', [mediaController::class, 'index']);
 
     Route::post('/like', [likeController::class, 'store']);
+    Route::get('/like/{id}', [likeController::class, 'index']);
     Route::delete('/unlike/{id}', [likeController::class, 'destroy']);
 
     Route::post('/comment', [commentController::class, 'store']);
-    Route::post('/post-comments', [commentController::class, 'index']);
+    Route::post('/subComment', [SubCommentController::class, 'store']);
+    Route::get('/subComment/{id}', [SubCommentController::class, 'index']);
+    Route::post('/commentLike', [CommentLikeController::class, 'store']);
+    Route::get('/commentLike/{id}', [CommentLikeController::class, 'index']);
+    Route::delete('/commentUnlike/{id}', [CommentLikeController::class, 'destroy']);
+    Route::get('/post-comments/{id}', [commentController::class, 'index']);
     
     Route::post('/logout', [AuthController::class, 'Logout']);
 });
