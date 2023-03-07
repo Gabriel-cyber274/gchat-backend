@@ -17,6 +17,7 @@ return new class extends Migration
             $table->id();
             $table->bigInteger('user_id');
             $table->bigInteger('post_id');
+            $table->boolean('public');
             $table->timestamps();
         });
     }

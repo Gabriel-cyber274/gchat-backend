@@ -61,5 +61,22 @@ class commentController extends Controller
     public function destroy($id)
     {
         //
+        $like = Comments::destroy($id);
+        
+        if($like === 1) {
+            $response = [
+                'message'=> 'Comment deleted',
+                'success' => true
+            ];
+            return response($response);
+        }
+        else {
+            $response = [
+                'message'=> 'error',
+                'success' => false
+            ];
+            return response($response);
+        }
+
     }
 }

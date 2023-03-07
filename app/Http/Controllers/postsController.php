@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Post;
 use App\Models\User;
+use App\Models\Friends;
 use App\Models\Images;
 use Illuminate\Http\Response;
+use App\Events\PostCreated;
+use Illuminate\Support\Facades\Auth;
 
 class postsController extends Controller
 {
@@ -17,7 +20,7 @@ class postsController extends Controller
      */
     public function index()
     {
-        $posts = Post::with(['user', 'images', 'likes', 'comments', 'share'])->get();
+        $posts = Post::with(['user', 'images', 'likes', 'comments', 'share'])->where('public', 1)->get();
         $sorted = collect($posts)->sortByDesc('id');
         $final  = [];
         foreach($sorted->values()->all() as $data){
@@ -31,6 +34,31 @@ class postsController extends Controller
 
         return response($response, 200);
         // return ;
+    }
+
+    public function private () {
+        $id= auth()->user()->id;
+        $friends = Friends::with(['user'])->where('user_id', $id)->get();
+
+        $sorted = collect($friends)->sortByDesc('id');
+        $final  = [];
+        foreach($sorted->values()->all() as $data){
+            $final[] = $data->user;
+        }
+
+        $posts = Post::with(['user', 'images', 'likes', 'comments', 'share'])->where('user_id', $final)->where('public', 0)->get();
+        $sorted = collect($posts)->sortByDesc('id');
+        $final2  = [];
+        foreach($sorted->values()->all() as $data){
+            $final2[] = $data;
+        }
+        $response = [
+            'post'=> $final2,
+            'message'=> 'posts retrieved',
+            'success' => true
+        ];
+
+        return response($response, 200);
     }
 
     public function myPosts()
@@ -70,16 +98,37 @@ class postsController extends Controller
      */
     public function store(Request $request)
     {
-            $post = Post::create([
-                'user_id'=> auth()->user()->id,
-                'text'=> $request['text'],
-            ]);
+            $user = Auth::user();
+
+            if(is_null($request['public'])) {
+                $post = Post::create([
+                    'user_id'=> auth()->user()->id,
+                    'text'=> $request['text'],
+                    'public'=> true
+                ]);
+                
+                $response = [
+                    'post_id'=> $post->id,
+                    'message'=> 'post created',
+                    'success' => true
+                ];
+            }else {
+                $post = Post::create([
+                    'user_id'=> auth()->user()->id,
+                    'text'=> $request['text'],
+                    'public'=> $request['public']
+                ]);
+                
+                $response = [
+                    'post_id'=> $post->id,
+                    'message'=> 'post created',
+                    'success' => true
+                ];
+            }
             
-            $response = [
-                'post_id'=> $post->id,
-                'message'=> 'post created',
-                'success' => true
-            ];
+
+            // event(new PostCreated($user, $post));
+            // broadcast(new PostCreated($user, $post));            
 
             return response($response, 201);
     }

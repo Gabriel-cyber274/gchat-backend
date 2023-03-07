@@ -10,6 +10,9 @@ use App\Http\Controllers\commentController;
 use App\Http\Controllers\shareController;
 use App\Http\Controllers\CommentLikeController;
 use App\Http\Controllers\SubCommentController;
+use App\Http\Controllers\FriendsController;
+
+// FriendsController
 
 
 /*
@@ -33,9 +36,12 @@ Route::post('/login', [AuthController::class, 'Login']);
 
 Route::group(['middleware'=> ['auth:sanctum']], function () {
     Route::get('/posts', [postsController::class, 'index']);
+    Route::get('/posts/private', [postsController::class, 'private']);
     Route::post('/posts', [postsController::class, 'store']);
     Route::post('/posts/share', [shareController::class, 'store']);
     Route::get('/posts/share', [shareController::class, 'index']);
+    Route::get('/posts/share/public', [shareController::class, 'publicShare']);
+    Route::get('/posts/share/private', [shareController::class, 'privateShare']);
     Route::get('/myPosts', [postsController::class, 'myPosts']);
 
     Route::post('/media', [mediaController::class, 'store']);
@@ -51,7 +57,13 @@ Route::group(['middleware'=> ['auth:sanctum']], function () {
     Route::post('/commentLike', [CommentLikeController::class, 'store']);
     Route::get('/commentLike/{id}', [CommentLikeController::class, 'index']);
     Route::delete('/commentUnlike/{id}', [CommentLikeController::class, 'destroy']);
+    Route::delete('/deleteComment/{id}', [commentController::class, 'destroy']);
     Route::get('/post-comments/{id}', [commentController::class, 'index']);
+
+    
+    Route::post('/friends', [FriendsController::class, 'store']);
+    Route::get('/friends', [FriendsController::class, 'index']);
+    Route::delete('/removeFriend/{id}/{id2}', [FriendsController::class, 'destroy']);
     
     Route::post('/logout', [AuthController::class, 'Logout']);
 });
@@ -64,3 +76,4 @@ Route::group(['middleware'=> ['auth:sanctum']], function () {
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
