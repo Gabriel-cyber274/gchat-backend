@@ -37,4 +37,8 @@ class Post extends Model
     public function share () {
         return $this->hasMany(Share::class);
     }
+
+    public function savedPost () {
+        return $this->hasMany(Save::class);
+    }
 }

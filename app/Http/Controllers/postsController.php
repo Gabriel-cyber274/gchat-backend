@@ -45,15 +45,20 @@ class postsController extends Controller
         foreach($sorted->values()->all() as $data){
             $final[] = $data->user;
         }
-
+        $final[] = $id;
+        
         $posts = Post::with(['user', 'images', 'likes', 'comments', 'share'])->where('user_id', $final)->where('public', 0)->get();
         $sorted = collect($posts)->sortByDesc('id');
         $final2  = [];
         foreach($sorted->values()->all() as $data){
             $final2[] = $data;
         }
+
+        $posts2 = Post::with(['user', 'images', 'likes', 'comments', 'share'])->where('user_id', $id)->where('public', 0)->get()->last();
+
         $response = [
             'post'=> $final2,
+            'myPrivate'=> $posts2,
             'message'=> 'posts retrieved',
             'success' => true
         ];

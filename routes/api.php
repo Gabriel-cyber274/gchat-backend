@@ -11,8 +11,7 @@ use App\Http\Controllers\shareController;
 use App\Http\Controllers\CommentLikeController;
 use App\Http\Controllers\SubCommentController;
 use App\Http\Controllers\FriendsController;
-
-// FriendsController
+use App\Http\Controllers\saveController;
 
 
 /*
@@ -40,9 +39,13 @@ Route::group(['middleware'=> ['auth:sanctum']], function () {
     Route::post('/posts', [postsController::class, 'store']);
     Route::post('/posts/share', [shareController::class, 'store']);
     Route::get('/posts/share', [shareController::class, 'index']);
+    Route::delete('/posts/share/{id}', [shareController::class, 'destroy']);
     Route::get('/posts/share/public', [shareController::class, 'publicShare']);
     Route::get('/posts/share/private', [shareController::class, 'privateShare']);
     Route::get('/myPosts', [postsController::class, 'myPosts']);
+    Route::post('/posts/save', [saveController::class, 'store']);
+    Route::get('/posts/save', [saveController::class, 'index']);
+    Route::delete('/posts/save/{id}', [saveController::class, 'destroy']);
 
     Route::post('/media', [mediaController::class, 'store']);
     Route::get('/media', [mediaController::class, 'index']);
