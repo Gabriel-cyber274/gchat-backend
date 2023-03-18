@@ -47,7 +47,10 @@ class User extends Authenticatable
         return $this->hasMany(Post::class);
     }
 
-    
+    public function stories() {
+        return $this->hasOne(Stories::class);
+    }
+
     public function commentLike() {
         return $this->hasMany(CommentLike::class);
     }
@@ -65,9 +68,26 @@ class User extends Authenticatable
         return $this->hasMany(Comments::class);
     }
 
+    public function storymedia() {
+        return $this->hasMany(StoriesMedia::class);
+    }
+
+    public function storytext() {
+        return $this->hasMany(StoriesText::class);
+    }
+
     
     public function share () {
         return $this->belongsToMany(Share::class, 'share_user', 'user_id', 'share_id');
+    }
+
+    
+    public function views1 () {
+        return $this->belongsToMany(Views::class, 'user_view', 'user_id', 'view_id');
+    }
+
+    public function views2 () {
+        return $this->belongsToMany(ViewsText::class, 'user_viewtext', 'user_id', 'viewtext_id');
     }
     
     public function savedPost () {

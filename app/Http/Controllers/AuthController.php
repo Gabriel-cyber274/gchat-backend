@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Models\User;
+use App\Models\Stories;
 use Illuminate\Support\Facades\Hash;
 // use Illuminate\Support\Facades\Validator;
 
@@ -26,9 +27,13 @@ class AuthController extends Controller
 
         $token = $user->createToken('myToken')->plainTextToken;
 
+        
+        $stories = Stories::create([
+            'user_id'=> $user->id,
+        ]);
+
         $response = [
             'user'=> $user,
-            // 'token'=> $token,
             'message'=> 'successful signup',
             'success' => true
         ];

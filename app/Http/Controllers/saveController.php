@@ -29,14 +29,9 @@ class saveController extends Controller
         }
         
         $posts = Post::with(['user', 'images', 'likes', 'comments', 'share'])->find($try);
-        $sorted = collect($posts)->sortByDesc('id');
-        $final  = [];
-        foreach($sorted->values()->all() as $data){
-            $final[] = $data;
-        }
-
+        
         $response = [
-            'post'=> $final,
+            'post'=> $posts,
             'message'=> 'saved post retrieved',
             'success' => true
         ];

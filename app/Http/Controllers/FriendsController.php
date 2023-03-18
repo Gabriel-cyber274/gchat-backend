@@ -12,7 +12,6 @@ class FriendsController extends Controller
 {
     public function index()
     {
-        
         $id= auth()->user()->id;
         $friends = Friends::with(['user'])->where('user', $id)->get();
         $sorted = collect($friends)->sortByDesc('id');

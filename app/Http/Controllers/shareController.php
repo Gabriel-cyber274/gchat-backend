@@ -25,14 +25,14 @@ class shareController extends Controller
         }
         
         $posts = Post::with(['user', 'images', 'likes', 'comments', 'share'])->find($try);
-        $sorted = collect($posts)->sortByDesc('id');
-        $final  = [];
-        foreach($sorted->values()->all() as $data){
-            $final[] = $data;
-        }
+        // $sorted = collect($posts)->sortByDesc('id');
+        // $final  = [];
+        // foreach($sorted->values()->all() as $data){
+        //     $final[] = $data;
+        // }
 
         $response = [
-            'post'=> $final,
+            'post'=> $posts,
             'message'=> 'shared post retrieved',
             'success' => true
         ];
@@ -86,7 +86,6 @@ class shareController extends Controller
         
         return response($response);
     }
-
     
     public function privateShare() {
         $id= auth()->user()->id;
@@ -98,21 +97,27 @@ class shareController extends Controller
             $usershare[] = $data->user;
         }
         $usershare[] = $id;
-        
-        $shares = Share::with(['post'])->find($usershare);
-        
 
-        $main=[];
-        $pub = $shares->filter(function($value, $key){
+        
+        $shareAll = Share::with(['post'])->get();
+        $filtered = $shareAll->filter(function($value, $key){
             return $value->public == 0;
         });
+
         
-        foreach($pub->values()->all() as $share) {
-            $main[]=$share;
+        $shares = [];
+        foreach($usershare as $data){
+            $filt = collect($filtered)->where('user_id', $data)->all();
+            if(!is_null($filt)) {
+                foreach($filt as $data){
+                    $shares[]= $data;
+                }
+            }
         }
+        
 
         $prepost=[];
-        foreach($main as $post) {
+        foreach($shares as $post) {
             $prepost[]=$post->post->id;
         }
 

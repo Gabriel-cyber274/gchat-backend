@@ -47,18 +47,25 @@ class postsController extends Controller
         }
         $final[] = $id;
         
-        $posts = Post::with(['user', 'images', 'likes', 'comments', 'share'])->where('user_id', $final)->where('public', 0)->get();
+        $posts = [];
+        foreach($final as $post) {
+            $value = Post::with(['user', 'images', 'likes', 'comments', 'share'])->where('user_id', $post)->where('public', 0)->get();
+            if(!is_null($value)) {
+                foreach($value as $data){
+                    $posts[]= $data;
+                }
+            }
+        }
+
         $sorted = collect($posts)->sortByDesc('id');
         $final2  = [];
         foreach($sorted->values()->all() as $data){
             $final2[] = $data;
         }
 
-        $posts2 = Post::with(['user', 'images', 'likes', 'comments', 'share'])->where('user_id', $id)->where('public', 0)->get()->last();
 
         $response = [
             'post'=> $final2,
-            'myPrivate'=> $posts2,
             'message'=> 'posts retrieved',
             'success' => true
         ];
@@ -85,22 +92,6 @@ class postsController extends Controller
         return response($response, 200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
             $user = Auth::user();
@@ -138,20 +129,42 @@ class postsController extends Controller
             return response($response, 201);
     }
 
-
-
-    public function edit($id)
-    {
-        //
-    }
-
     public function update(Request $request, $id)
     {
         //
+        $post = Post::find($id);
+        $update = $request->all();
+
+        foreach($update as $up) {
+            $post->update($up);
+        }
+
+        
+        return response()->json([
+            'post'=> $post,
+            'success' => true,
+            'message' => 'Media Uploaded Successfully!!'
+        ]);
     }
 
     public function destroy($id)
     {
         //
+        $post = Post::destroy($id);
+        if($post === 1) {
+            $response = [
+                'message'=> 'post deleted',
+                'success' => true
+            ];
+            return response($response);
+        }
+        else {
+            $response = [
+                'message'=> 'error',
+                'success' => false
+            ];
+            return response($response);
+        }
+
     }
 }
