@@ -37,21 +37,37 @@ class FriendsController extends Controller
             'user_id'=> 'required|integer',
         ]);
 
-        $friend = Friends::create([
-            'user'=> auth()->user()->id,
-            'user_id'=> $request['user_id'],
-        ]);
+        
+        // $check = Friends::where('user', auth()->user()->id)->where('user_id', $request['user_id'])->get()->filter(function($value, $key){
+        //     return $value->user_id == auth()->user()->id;
+        // });
 
-        
-        $user = User::where('id', $request['user_id'])->get();
-        $friend->user()->attach($user);
-        
-        
-        $response = [
-            'friend'=> $friend,
-            'message'=> 'friend added',
-            'success' => true
-        ];
+        $check = Friends::where('user', auth()->user()->id)->where('user_id', $request['user_id'])->get();
+        if(count($check) === 0) {
+            $friend = Friends::create([
+                'user'=> auth()->user()->id,
+                'user_id'=> $request['user_id'],
+            ]);
+    
+            
+            $user = User::where('id', $request['user_id'])->get();
+            $friend->user()->attach($user);
+            
+            
+            $response = [
+                'friend'=> $friend,
+                'message'=> 'friend added',
+                'success' => true
+            ];
+        }
+        else {
+            $response = [
+                'message'=> 'this user is already your friend',
+                'success' => true
+            ];
+        }
+
+
         
         return response($response, 201);
     }

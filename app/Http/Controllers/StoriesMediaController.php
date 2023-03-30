@@ -40,7 +40,7 @@ class StoriesMediaController extends Controller
         // $test = substr(Str::limit(Stories::get()->first()->created_at, 10, ''), 8) + 1;
         // $test2 = Str::limit(Stories::get()->first()->created_at, 8, ''). $test . ' '. substr(Stories::get()->first()->created_at, 11);
         
-        if(StoriesMedia::with(['stories', 'user', 'views'])->where('story_id', $id)->get()->first()->user->id === auth()->user()->id) {
+        if(count(StoriesMedia::with(['stories', 'user', 'views'])->where('story_id', $id)->get()) > 0 && StoriesMedia::with(['stories', 'user', 'views'])->where('story_id', $id)->get()->first()->user->id === auth()->user()->id) {
             $media = StoriesMedia::with(['stories', 'user', 'views'])->where('story_id', $id)->get();
             $response = [
                 'media'=> $media,
@@ -57,6 +57,7 @@ class StoriesMediaController extends Controller
         }
 
         return response($response); 
+        // return StoriesMedia::with(['stories', 'user',])->where('story_id', $id)->get();
     }
 
     public function store(Request $request)

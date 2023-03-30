@@ -31,7 +31,7 @@ class StoriesTextController extends Controller
         }
 
 
-        if(StoriesText::with(['stories', 'user', 'views'])->where('story_id', $id)->get()->first()->user->id === auth()->user()->id) {
+        if(count(StoriesText::with(['stories', 'user', 'views'])->where('story_id', $id)->get()) > 0 && StoriesText::with(['stories', 'user', 'views'])->where('story_id', $id)->get()->first()->user->id === auth()->user()->id) {
             $text = StoriesText::with(['stories', 'user', 'views'])->where('story_id', $id)->get();
             $response = [
                 'text'=> $text,
@@ -57,7 +57,7 @@ class StoriesTextController extends Controller
     {
         //
         $this->validate($request, [
-            'text'=> 'required|string',
+            'text'=> 'required|string|max:500',
             // 'story_id'=> 'required|integer'
         ]);
         

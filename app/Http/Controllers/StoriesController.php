@@ -59,31 +59,20 @@ class StoriesController extends Controller
         
 
         $pub = [];
-        $pub[]= Stories::with(['media','user', 'text'])->where('user_id', $id)->get()->first();
-        foreach($usershare as $data){
-            // if(!is_null(Stories::with(['media','user', 'text'])->where('user_id', $data)->get()->first())) {
-            //     $pub[]= Stories::with(['media', 'user', 'text'])->where('user_id', $data)->get()->first();
-            // }
-            if(count(Stories::has('media')->with(['media','user', 'text'])->where('user_id', $data)->get()) !== 0 && count(Stories::has('text')->with(['media','user', 'text'])->where('user_id', $data)->get()) == 0) {
-                $pub[]= Stories::has('media')->with(['media','user', 'text'])->where('user_id', $data)->get()->first();
-            }
-            else if(count(Stories::has('media')->with(['media','user', 'text'])->where('user_id', $data)->get()) == 0 && count(Stories::has('text')->with(['media','user', 'text'])->where('user_id', $data)->get()) !== 0) {
-                $pub[]= Stories::has('text')->with(['media','user', 'text'])->where('user_id', $data)->get()->first();
-            }else {
-                $pub[]= Stories::with(['media', 'user', 'text'])->where('user_id', $data)->get()->first();
-            }
+        if(count(Stories::with(['media','user', 'text'])->where('user_id', $id)->get()->first()->media) !== 0 || count(Stories::with(['media','user', 'text'])->where('user_id', $id)->get()->first()->text) !== 0) {
+            $pub[]= Stories::with(['media','user', 'text'])->where('user_id', $id)->get()->first();
         }
 
+        foreach($usershare as $data){
+            if(count(Stories::with(['media','user', 'text'])->where('user_id', $data)->get()->first()->media) !== 0 || count(Stories::with(['media','user', 'text'])->where('user_id', $data)->get()->first()->text) !== 0) {
+                $pub[]= Stories::with(['media','user', 'text'])->where('user_id', $data)->get()->first();
+            }
+        }
         
 
-        $sorted = collect($pub)->sortByDesc('id');
-        $final  = [];
-        foreach($sorted->values()->all() as $data){
-            $final[] = $data;
-        }
         
         $response = [
-            'stories'=> $final,
+            'stories'=> $pub,
             'message'=> 'stories retrieved',
             'success' => true
         ];
