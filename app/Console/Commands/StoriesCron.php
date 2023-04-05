@@ -43,9 +43,9 @@ class StoriesCron extends Command
         $MediaAll = StoriesMedia::with(['stories'])->get();
 
         $old = $MediaAll->filter(function($value, $key){
-            $day = substr(Str::limit($value->created_at, 10, ''), 8) + 1;
-            $date = Str::limit($value->created_at, 8, ''). $day . ' '. substr($value->created_at, 11);
-            return $date <= '20'.now()->format('y-m-d H:i:s');
+            // $day = substr(Str::limit($value->created_at, 10, ''), 8) + 1;
+            // $date = Str::limit($value->created_at, 8, ''). $day . ' '. substr($value->created_at, 11);
+            return $value->created_at <= now()->subHours(24);
         });
 
         foreach($old as $data){
@@ -56,9 +56,9 @@ class StoriesCron extends Command
         $textAll = StoriesText::with(['stories'])->get();
 
         $old2 = $textAll->filter(function($value, $key){
-            $day = substr(Str::limit($value->created_at, 10, ''), 8) + 1;
-            $date = Str::limit($value->created_at, 8, ''). $day . ' '. substr($value->created_at, 11);
-            return $date <= '20'.now()->format('y-m-d H:i:s');
+            // $day = substr(Str::limit($value->created_at, 10, ''), 8) + 1;
+            // $date = Str::limit($value->created_at, 8, ''). $day . ' '. substr($value->created_at, 11);
+            return $value->created_at <= now()->subHours(24);
         });
 
         foreach($old2 as $data){

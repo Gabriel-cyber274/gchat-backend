@@ -13,8 +13,42 @@ class FriendsController extends Controller
     public function index()
     {
         $id= auth()->user()->id;
-        $friends = Friends::with(['user'])->where('user', $id)->get();
-        $sorted = collect($friends)->sortByDesc('id');
+        $friends = Friends::where('user', $id)->get();
+        $users = [];
+        foreach($friends->values()->all() as $data){
+            $users[] = $data->user_id;
+        }
+
+
+
+        $sorted = collect(User::with('profilePic')->find($users))->sortByDesc('id');
+        $final  = [];
+        foreach($sorted->values()->all() as $data){
+            $final[] = $data;
+        }
+        $response = [
+            'friends'=> $final,
+            'message'=> 'friends retrieved',
+            'success' => true
+        ];
+
+        return response($response, 200);
+
+
+    }
+
+    public function confirm()
+    {
+        $id= auth()->user()->id;
+        $friends = Friends::where('user_id', $id)->get();
+        $users = [];
+        foreach($friends->values()->all() as $data){
+            $users[] = $data->user;
+        }
+
+
+
+        $sorted = collect(User::with('profilePic')->find($users))->sortByDesc('id');
         $final  = [];
         foreach($sorted->values()->all() as $data){
             $final[] = $data;
@@ -63,7 +97,7 @@ class FriendsController extends Controller
         else {
             $response = [
                 'message'=> 'this user is already your friend',
-                'success' => true
+                'success' => false
             ];
         }
 
@@ -72,12 +106,13 @@ class FriendsController extends Controller
         return response($response, 201);
     }
 
-    public function destroy($id, $id2)
+    public function destroy($userid)
     {
         //
-        
-        $friend = Friends::destroy($id);
-        $user = User::where('id', $id2)->get();
+        $id= auth()->user()->id;
+        $getFriend = Friends::where('user_id', $userid)->where('user', $id)->get();
+        $friend = Friends::destroy($getFriend);
+        $user = User::where('id', $userid)->get();
         
         $text = 'You'.' '. 'unfriended'.' '.$user->first()->name;
 
@@ -95,5 +130,6 @@ class FriendsController extends Controller
             ];
             return response($response);
         }
+
     }
 }

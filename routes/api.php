@@ -17,6 +17,8 @@ use App\Http\Controllers\StoriesMediaController;
 use App\Http\Controllers\StoriesTextController;
 use App\Http\Controllers\StoriesMediaViewController;
 use App\Http\Controllers\StoriesTextViewController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ChatController;
 
 // StoriesMediaViewController
 
@@ -77,7 +79,8 @@ Route::group(['middleware'=> ['auth:sanctum']], function () {
     
     Route::post('/friends', [FriendsController::class, 'store']);
     Route::get('/friends', [FriendsController::class, 'index']);
-    Route::delete('/removeFriend/{id}/{id2}', [FriendsController::class, 'destroy']);
+    Route::get('/friends/confirm', [FriendsController::class, 'confirm']);
+    Route::delete('/removeFriend/{userid}', [FriendsController::class, 'destroy']);
 
 
     
@@ -92,7 +95,16 @@ Route::group(['middleware'=> ['auth:sanctum']], function () {
     Route::delete('/stories/text/{id}', [StoriesTextController::class, 'destroy']);
     Route::get('/stories/text/views/{id}', [StoriesTextViewController::class, 'index']);
     Route::get('/stories/text/single/{id}', [StoriesTextController::class, 'show']);
+
+    Route::post('/profile/pic', [ProfileController::class, 'pic']);
+    Route::get('/profile/pic', [ProfileController::class, 'getProfilePic']);
     
+    Route::post('/chat', [ChatController::class, 'store']);
+    Route::get('/chat/{receiverid}', [ChatController::class, 'index']);
+
+    Route::get('/users', [AuthController::class, 'Users']);
+
+
     // 
     Route::post('/logout', [AuthController::class, 'Logout']);
 });

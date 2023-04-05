@@ -47,7 +47,7 @@ class AuthController extends Controller
             'password'=> 'required|string'
         ]);
 
-        $user = User::where('email', $fields['email'])->first();
+        $user = User::with('profilePic')->where('email', $fields['email'])->first();
 
         if(!$user || !Hash::check($fields['password'], $user->password)) {
             return response([
@@ -75,5 +75,32 @@ class AuthController extends Controller
         return [
             'message'=> 'logged out'
         ];
+    }
+
+    public function Users () {
+        $id= auth()->user()->id;
+        $users = User::with('profilePic')->get();
+        $mainUsers = $users->filter(function($value, $key){
+            return $value->id !== auth()->user()->id;
+        });
+
+        $main = [];
+        foreach($mainUsers->values()->all() as $users) {
+            $main[]=$users;
+        }
+
+        $sorted = collect($main)->sortByDesc('id');
+        $final  = [];
+        foreach($sorted->values()->all() as $data){
+            $final[] = $data;
+        }
+        
+        $response = [
+            'users'=> $final,
+            'message'=> 'users retrieved',
+            'success' => true
+        ];
+
+        return response($response);
     }
 }

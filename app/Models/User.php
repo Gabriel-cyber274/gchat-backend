@@ -98,4 +98,15 @@ class User extends Authenticatable
         return $this->belongsToMany(Friends::class, 'friends_user', 'user_id', 'friends_id');
     }
 
+    
+    public function profilePic () {
+        return $this->hasOne(ProfilePic::class);
+    }
+
+    
+    public function Chat () {
+        return $this->hasMany(Chat::class, 'sender_id', 'id');
+    }
+
+
 }
