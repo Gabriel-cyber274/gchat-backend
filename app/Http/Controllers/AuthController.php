@@ -7,6 +7,7 @@ use Illuminate\Http\Response;
 use App\Models\User;
 use App\Models\Stories;
 use Illuminate\Support\Facades\Hash;
+use App\Models\Notification;
 // use Illuminate\Support\Facades\Validator;
 
 
@@ -31,6 +32,16 @@ class AuthController extends Controller
         $stories = Stories::create([
             'user_id'=> $user->id,
         ]);
+
+        $notification = Notification::create([
+            'image'=> 'bot',
+            'user_id'=> $user->id,
+            'name'=> 'bot',
+            'message'=> 'Welcome to Gchat',
+            'page_id'=> 404,
+            'read'=> false
+        ]);
+        $notification->user()->attach($user);
 
         $response = [
             'user'=> $user,

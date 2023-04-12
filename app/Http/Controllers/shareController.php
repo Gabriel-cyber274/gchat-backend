@@ -6,7 +6,9 @@ use Illuminate\Http\Request;
 use App\Models\Share;
 use App\Models\User;
 use App\Models\Post;
+use App\Models\Notification;
 use App\Models\Friends;
+use Illuminate\Support\Str;
 use Illuminate\Http\Response;
 
 class shareController extends Controller
@@ -148,18 +150,103 @@ class shareController extends Controller
             'post_id'=> 'required|integer',
         ]);
 
-        if(is_null($request['public'])) {
+        $id= auth()->user()->id;
+        $friends = Friends::with(['user'])->where('user', $id)->get();
+        $sorted = collect($friends)->sortByDesc('id');
+        $final  = [];
+        foreach($sorted->values()->all() as $data){
+            $final[] = $data->user_id;
+        }
+
+        if(is_null($request['public']) || $request['public']) {
             $share = Share::create([
                 'user_id'=> auth()->user()->id,
                 'post_id'=> $request['post_id'],
                 'public'=> true,
             ]);
-        }else {
+
+            
+            $response = [
+                'share'=> $share,
+                'message'=> 'post shared',
+                'success' => true
+            ];
+
+        }
+        else if(!is_null($request['public']) && count($final) !== 0 && !$request['public']) {
             $share = Share::create([
                 'user_id'=> auth()->user()->id,
                 'post_id'=> $request['post_id'],
                 'public'=> $request['public'],
             ]);
+
+            
+            $posts = Post::where('id', $request->post_id)->get();
+            $user_not = User::with('profilePic')->where('id', auth()->user()->id)->get()->first();
+            
+            $user = User::with('profilePic')->find($final);
+
+            foreach($user as $person) {
+                $notification = Notification::create([
+                    'image'=> $user_not->profilePic,
+                    'user_id'=> $person->id,
+                    'name'=> $user_not->name,
+                    'message'=> 'shared a post privately',
+                    'page_id'=> $posts->first()->id,
+                    'read'=> false
+                ]);
+                $notification->user()->attach($person);
+            }
+
+
+
+            $response = [
+                'share'=> $share,
+                'message'=> 'post shared',
+                'success' => true
+            ];
+
+        }
+        else if(!is_null($request['public']) && count($final) === 0 && !$request['public']) {
+            $share = Share::create([
+                'user_id'=> auth()->user()->id,
+                'post_id'=> $request['post_id'],
+                'public'=> $request['public'],
+            ]);
+
+            $response = [
+                'share'=> $share,
+                'message'=> 'post shared',
+                'success' => true
+            ];
+        }
+
+        
+        $posts = Post::where('id', $request->post_id)->get();
+        if($posts->first()->user_id !== auth()->user()->id && !is_null($posts->first()->text)) {
+            $user = User::with('profilePic')->where('id', $posts->first()->user_id)->get();
+            $user_not = User::with('profilePic')->where('id', auth()->user()->id)->get()->first();
+            $notification = Notification::create([
+                'image'=> $user_not->profilePic,
+                'user_id'=> reset($final),
+                'name'=> $user_not->name,
+                'message'=> 'shared your post'. ' '.'('.Str::limit($posts->first()->text, 20, '...').')',
+                'page_id'=> $posts->first()->id,
+                'read'=> false
+            ]);
+            $notification->user()->attach($user);
+        }
+        else if ($posts->first()->user_id !== auth()->user()->id && is_null($posts->first()->text)) {
+            $user_not = User::with('profilePic')->where('id', auth()->user()->id)->get()->first();
+            $notification = Notification::create([
+                'image'=> $user_not->profilePic,
+                'user_id'=> reset($final),
+                'name'=> $user_not->name,
+                'message'=> 'shared your post',
+                'page_id'=> $posts->first()->id,
+                'read'=> false
+            ]);
+            $notification->user()->attach($posts->first()->user_id);
         }
 
         
@@ -167,11 +254,11 @@ class shareController extends Controller
         $share->user()->attach($user);
         
         
-        $response = [
-            'share'=> $share,
-            'message'=> 'post shared',
-            'success' => true
-        ];
+        // $response = [
+        //     'share'=> $share,
+        //     'message'=> 'post shared',
+        //     'success' => true
+        // ];
 
         return response($response);
 

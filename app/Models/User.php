@@ -108,5 +108,8 @@ class User extends Authenticatable
         return $this->hasMany(Chat::class, 'sender_id', 'id');
     }
 
+    public function Notification() {
+        return $this->belongsToMany(Notification::class, 'notification_user', 'user_id', 'notification_id');
+    }
 
 }

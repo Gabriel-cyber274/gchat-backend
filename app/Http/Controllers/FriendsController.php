@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Friends;
 use App\Models\User;
 use App\Models\Post;
+use App\Models\Notification;
 use Illuminate\Http\Response;
 
 class FriendsController extends Controller
@@ -77,20 +78,67 @@ class FriendsController extends Controller
         // });
 
         $check = Friends::where('user', auth()->user()->id)->where('user_id', $request['user_id'])->get();
-        if(count($check) === 0) {
+        $check2 = Friends::where('user_id', auth()->user()->id)->where('user', $request['user_id'])->get();
+        $user_not = User::with('profilePic')->where('id', auth()->user()->id)->get()->first();
+        if(count($check) === 0 && count($check2) === 0 ) {
             $friend = Friends::create([
                 'user'=> auth()->user()->id,
                 'user_id'=> $request['user_id'],
             ]);
     
             
-            $user = User::where('id', $request['user_id'])->get();
+            $user = User::with('profilePic')->where('id', $request['user_id'])->get();
             $friend->user()->attach($user);
+
+            
+            $user_not = User::with('profilePic')->where('id', auth()->user()->id)->get()->first();
+
+            $notification = Notification::create([
+                'image'=> $user_not->profilePic,
+                'user_id'=> $request['user_id'],
+                'name'=> $user_not->name,
+                'message'=> 'sent you a friend request',
+                'page_id'=> $user_not->id,
+                'read'=> false
+            ]);
+            $notification->user()->attach($user);
+
             
             
             $response = [
                 'friend'=> $friend,
                 'message'=> 'friend added',
+                'success' => true
+            ];
+        }
+        else if (count($check) === 0 && count($check2) !== 0) {
+            $friend = Friends::create([
+                'user'=> auth()->user()->id,
+                'user_id'=> $request['user_id'],
+            ]);
+    
+            
+            $user = User::with('profilePic')->where('id', $request['user_id'])->get();
+            $friend->user()->attach($user);
+
+            
+            $user_not = User::with('profilePic')->where('id', auth()->user()->id)->get()->first();
+
+            $notification = Notification::create([
+                'image'=> $user_not->profilePic,
+                'user_id'=> $request['user_id'],
+                'name'=> $user_not->name,
+                'message'=> 'accepted your friend request',
+                'page_id'=> $user_not->id,
+                'read'=> false
+            ]);
+            $notification->user()->attach($user);
+
+            
+            
+            $response = [
+                'friend'=> $friend,
+                'message'=> 'friend request accepted',
                 'success' => true
             ];
         }
@@ -101,8 +149,6 @@ class FriendsController extends Controller
             ];
         }
 
-
-        
         return response($response, 201);
     }
 
@@ -115,12 +161,24 @@ class FriendsController extends Controller
         $user = User::where('id', $userid)->get();
         
         $text = 'You'.' '. 'unfriended'.' '.$user->first()->name;
+        $user_not = User::with('profilePic')->where('id', auth()->user()->id)->get()->first();
 
         if($friend === 1) {
             $response = [
                 'message'=> $text,
                 'success' => true
             ];
+
+            $notification = Notification::create([
+                'image'=> $user_not->profilePic,
+                'user_id'=> $user->first()->id,
+                'name'=> $user_not->name,
+                'message'=> 'unfriended you',
+                'page_id'=> $user_not->id,
+                'read'=> false
+            ]);
+            $notification->user()->attach($user);
+            
             return response($response);
         }
         else {
@@ -130,6 +188,6 @@ class FriendsController extends Controller
             ];
             return response($response);
         }
-
+        
     }
 }

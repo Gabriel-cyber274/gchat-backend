@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Likes;
 use App\Models\Post;
+use App\Models\User;
+use App\Models\Notification;
+use Illuminate\Support\Str;
 use Illuminate\Http\Response;
 
 class likeController extends Controller
@@ -40,10 +43,43 @@ class likeController extends Controller
             'post_id'=> $request->post_id
         ]);
         
+        
 
         
         $posts = Post::where('id', $request->post_id)->get();
         $like->posts()->attach($posts);
+
+        
+
+        if($posts->first()->user_id !== Auth()->user()->id && !is_null($posts->first()->text)) {
+            $user = User::with('profilePic')->where('id', $posts->first()->user_id)->get();
+            $user_not = User::with('profilePic')->where('id', auth()->user()->id)->get()->first();
+    
+            $notification = Notification::create([
+                'image'=> $user_not->profilePic,
+                'user_id'=> $posts->first()->user_id,
+                'name'=> $user_not->name,
+                'message'=> 'liked your post'. ' '.'('.Str::limit($posts->first()->text, 20, '...').')',
+                'page_id'=> $posts->first()->id,
+                'read'=> false
+            ]);
+            $notification->user()->attach($user);
+        }
+        else if ($posts->first()->user_id !== Auth()->user()->id && is_null($posts->first()->text)) {
+            $user = User::with('profilePic')->where('id', $posts->first()->user_id)->get();
+            $user_not = User::with('profilePic')->where('id', auth()->user()->id)->get()->first();
+    
+            $notification = Notification::create([
+                'image'=> $user_not->profilePic,
+                'user_id'=> $posts->first()->user_id,
+                'name'=> $user_not->name,
+                'message'=> 'liked your post',
+                'page_id'=> $posts->first()->id,
+                'read'=> false
+            ]);
+            $notification->user()->attach($user);
+
+        }
 
         $response = [
             'message'=> 'post liked',

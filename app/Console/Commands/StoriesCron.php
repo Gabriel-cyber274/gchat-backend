@@ -45,7 +45,7 @@ class StoriesCron extends Command
         $old = $MediaAll->filter(function($value, $key){
             // $day = substr(Str::limit($value->created_at, 10, ''), 8) + 1;
             // $date = Str::limit($value->created_at, 8, ''). $day . ' '. substr($value->created_at, 11);
-            return $value->created_at <= now()->subHours(24);
+            return $value->created_at <= now()->subHours(23);
         });
 
         foreach($old as $data){
@@ -58,7 +58,7 @@ class StoriesCron extends Command
         $old2 = $textAll->filter(function($value, $key){
             // $day = substr(Str::limit($value->created_at, 10, ''), 8) + 1;
             // $date = Str::limit($value->created_at, 8, ''). $day . ' '. substr($value->created_at, 11);
-            return $value->created_at <= now()->subHours(24);
+            return $value->created_at <= now()->subHours(23);
         });
 
         foreach($old2 as $data){

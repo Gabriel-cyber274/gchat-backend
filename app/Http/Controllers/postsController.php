@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Friends;
 use App\Models\Images;
 use Illuminate\Http\Response;
+use App\Models\Notification;
 use App\Events\PostCreated;
 use Illuminate\Support\Facades\Auth;
 
@@ -73,6 +74,44 @@ class postsController extends Controller
         return response($response, 200);
     }
 
+    public function allFriendsPost () {
+        $id= auth()->user()->id;
+        $friends = Friends::with(['user'])->where('user_id', $id)->get();
+
+        $sorted = collect($friends)->sortByDesc('id');
+        $final  = [];
+        foreach($sorted->values()->all() as $data){
+            $final[] = $data->user;
+        }
+        
+        $posts = [];
+        foreach($final as $post) {
+            $value = Post::with(['user', 'images', 'likes', 'comments', 'share'])->where('user_id', $post)->get();
+            if(!is_null($value)) {
+                foreach($value as $data){
+                    $posts[]= $data;
+                }
+            }
+        }
+
+        $sorted = collect($posts)->sortByDesc('id');
+        $final2  = [];
+        foreach($sorted->values()->all() as $data){
+            $final2[] = $data;
+        }
+
+
+        $response = [
+            'post'=> $final2,
+            'message'=> 'posts retrieved',
+            'success' => true
+        ];
+
+        return response($response, 200);
+
+    }
+
+
     public function myPosts()
     {
         $id= auth()->user()->id;
@@ -94,39 +133,82 @@ class postsController extends Controller
 
     public function store(Request $request)
     {
-            $user = Auth::user();
+        $user = Auth::user();
+        
+        $id= auth()->user()->id;
+        $friends = Friends::with(['user'])->where('user', $id)->get();
+        $sorted = collect($friends)->sortByDesc('id');
+        $final  = [];
+        foreach($sorted->values()->all() as $data){
+            $final[] = $data->user_id;
+        }
 
-            if(is_null($request['public'])) {
-                $post = Post::create([
-                    'user_id'=> auth()->user()->id,
-                    'text'=> $request['text'],
-                    'public'=> true
-                ]);
-                
-                $response = [
-                    'post_id'=> $post->id,
-                    'message'=> 'post created',
-                    'success' => true
-                ];
-            }else {
-                $post = Post::create([
-                    'user_id'=> auth()->user()->id,
-                    'text'=> $request['text'],
-                    'public'=> $request['public']
-                ]);
-                
-                $response = [
-                    'post_id'=> $post->id,
-                    'message'=> 'post created',
-                    'success' => true
-                ];
-            }
+
+        if(is_null($request['public']) || $request['public']) {
+            $post = Post::create([
+                'user_id'=> auth()->user()->id,
+                'text'=> $request['text'],
+                'public'=> true
+            ]);
+       
             
+            $response = [
+                'post_id'=> $post->id,
+                'message'=> 'post created',
+                'success' => true
+            ];
+        }
+        else if(!is_null($request['public']) && count($final) !== 0 && !$request['public']) {
+            $post = Post::create([
+                'user_id'=> auth()->user()->id,
+                'text'=> $request['text'],
+                'public'=> $request['public']
+            ]);
+            
+            
+            
+            $user_not = User::with('profilePic')->where('id', auth()->user()->id)->get()->first();
+            
+            $user = User::with('profilePic')->find($final);
 
-            // event(new PostCreated($user, $post));
-            // broadcast(new PostCreated($user, $post));            
+            foreach($user as $person) {
+                $notification = Notification::create([
+                    'image'=> $user_not->profilePic,
+                    'user_id'=> $person->id,
+                    'name'=> $user_not->name,
+                    'message'=> 'posted privately',
+                    'page_id'=> $post->id,
+                    'read'=> false
+                ]);
+                $notification->user()->attach($person);
+            }
 
-            return response($response, 201);
+            $response = [
+                'post_id'=> $post->id,
+                'message'=> 'post created',
+                'success' => true
+            ];
+        }
+        else if(!is_null($request['public']) && count($final) === 0 && !$request['public']) {
+            $post = Post::create([
+                'user_id'=> auth()->user()->id,
+                'text'=> $request['text'],
+                'public'=> $request['public']
+            ]);
+
+            $response = [
+                'post_id'=> $post->id,
+                'message'=> 'post created',
+                'success' => true
+            ];
+        }
+        
+
+        // event(new PostCreated($user, $post));
+        // broadcast(new PostCreated($user, $post));            
+
+        return response($response);
+        
     }
 
     public function update(Request $request, $id)
@@ -143,7 +225,7 @@ class postsController extends Controller
         return response()->json([
             'post'=> $post,
             'success' => true,
-            'message' => 'Media Uploaded Successfully!!'
+            'message' => 'Post Updated Successfully!!'
         ]);
     }
 

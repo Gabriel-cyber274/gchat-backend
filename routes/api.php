@@ -19,6 +19,7 @@ use App\Http\Controllers\StoriesMediaViewController;
 use App\Http\Controllers\StoriesTextViewController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\NotificationController;
 
 // StoriesMediaViewController
 
@@ -49,12 +50,15 @@ Route::group(['middleware'=> ['auth:sanctum']], function () {
     Route::post('/posts', [postsController::class, 'store']);
     Route::PUT('/posts/update/{id}', [postsController::class, 'update']);
     Route::delete('/posts/delete/{id}', [postsController::class, 'destroy']);
+    Route::get('/posts/allFriendsPost', [postsController::class, 'allFriendsPost']);
     
     Route::post('/posts/share', [shareController::class, 'store']);
     Route::get('/posts/share', [shareController::class, 'index']);
     Route::delete('/posts/share/{id}', [shareController::class, 'destroy']);
     Route::get('/posts/share/public', [shareController::class, 'publicShare']);
     Route::get('/posts/share/private', [shareController::class, 'privateShare']);
+
+    // allFriendsPost
     Route::get('/myPosts', [postsController::class, 'myPosts']);
     Route::post('/posts/save', [saveController::class, 'store']);
     Route::get('/posts/save', [saveController::class, 'index']);
@@ -98,13 +102,25 @@ Route::group(['middleware'=> ['auth:sanctum']], function () {
 
     Route::post('/profile/pic', [ProfileController::class, 'pic']);
     Route::get('/profile/pic', [ProfileController::class, 'getProfilePic']);
+
     
     Route::post('/chat', [ChatController::class, 'store']);
     Route::get('/chat/{receiverid}', [ChatController::class, 'index']);
 
+    
     Route::get('/users', [AuthController::class, 'Users']);
 
 
+
+
+    Route::get('/notification', [NotificationController::class, 'index']);
+    Route::delete('/notification/delete/{id}', [NotificationController::class, 'destroy']);
+    Route::PUT('/notification/single/{id}', [NotificationController::class, 'update']);
+    Route::PUT('/notification/markAll', [NotificationController::class, 'updateAll']);
+
+
+
+    // NotificationController
     // 
     Route::post('/logout', [AuthController::class, 'Logout']);
 });

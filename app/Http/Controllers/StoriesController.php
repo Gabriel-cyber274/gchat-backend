@@ -32,7 +32,7 @@ class StoriesController extends Controller
         $old = $MediaAll->filter(function($value, $key){
             // $day = substr(Str::limit($value->created_at, 10, ''), 8) + 1;
             // $date = Str::limit($value->created_at, 8, ''). $day . ' '. substr($value->created_at, 11);
-            return $value->created_at <= now()->subHours(24);
+            return $value->created_at <= now()->subHours(23);
         });
 
         foreach($old as $data){
@@ -45,7 +45,7 @@ class StoriesController extends Controller
         $textAll = StoriesText::with(['stories'])->get();
 
         $old2 = $textAll->filter(function($value, $key){
-            return $value->created_at <= now()->subHours(24);
+            return $value->created_at <= now()->subHours(23);
         });
 
         foreach($old2 as $data){
@@ -72,6 +72,7 @@ class StoriesController extends Controller
         
         $response = [
             'stories'=> $pub,
+            // 'test'=> Str::limit('hshjskajhjsh2jhhjhhjhjhjhjj5', 10, '...'),
             'message'=> 'stories retrieved',
             'success' => true
         ];

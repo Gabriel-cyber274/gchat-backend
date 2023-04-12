@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\Subcomment;
 use App\Models\User;
 use App\Models\Comments;
+use App\Models\Notification;
+use Illuminate\Support\Str;
 use Illuminate\Http\Response;
 
 class SubCommentController extends Controller
@@ -51,6 +53,21 @@ class SubCommentController extends Controller
         
         $comment = Comments::where('id', $request->comment_id)->get();
         $subcomment->comment()->attach($comment);
+
+        if($comment->first()->user_id !== auth()->user()->id) {
+            $user = User::with('profilePic')->where('id', $comment->first()->user_id)->get();
+            $user_not = User::with('profilePic')->where('id', auth()->user()->id)->get()->first();
+    
+            $notification = Notification::create([
+                'image'=> $user_not->profilePic,
+                'user_id'=> $comment->first()->user_id,
+                'name'=> $user_not->name,
+                'message'=> 'replied your comment.'. ' '.'('.Str::limit($request->comment, 20, '...').')',
+                'page_id'=> $comment->first()->post_id,
+                'read'=> false
+            ]);
+            $notification->user()->attach($user);
+        }
 
         $response = [
             'subcomment'=> $subcomment,
