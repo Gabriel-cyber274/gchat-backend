@@ -65,7 +65,7 @@ class NotificationController extends Controller
         return response()->json([
             'notification'=> $notification,
             'success' => true,
-            'message' => 'Marked as read'
+            'message' => 'Updated sucessfully'
         ]);
     }
 

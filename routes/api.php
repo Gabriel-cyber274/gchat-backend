@@ -20,7 +20,9 @@ use App\Http\Controllers\StoriesTextViewController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\SearchController;
 
+// SearchController
 // StoriesMediaViewController
 
 // 
@@ -107,7 +109,7 @@ Route::group(['middleware'=> ['auth:sanctum']], function () {
     Route::post('/chat', [ChatController::class, 'store']);
     Route::get('/chat/{receiverid}', [ChatController::class, 'index']);
 
-    
+
     Route::get('/users', [AuthController::class, 'Users']);
 
 
@@ -117,6 +119,8 @@ Route::group(['middleware'=> ['auth:sanctum']], function () {
     Route::delete('/notification/delete/{id}', [NotificationController::class, 'destroy']);
     Route::PUT('/notification/single/{id}', [NotificationController::class, 'update']);
     Route::PUT('/notification/markAll', [NotificationController::class, 'updateAll']);
+
+    Route::get('/search/{search}', [SearchController::class, 'Search']);
 
 
 
